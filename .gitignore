@@ -27,6 +27,8 @@ build/
 dist/
 *.egg-info/
 *.whl
+*.exe
+msedgedriver*
 .env
 .env.*
 *.pem

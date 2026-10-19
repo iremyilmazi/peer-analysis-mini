@@ -14,6 +14,8 @@ from datetime import date
 from email.message import Message
 from pathlib import Path
 
+from kap_transport import urlopen
+
 
 BASE_URL = "https://www.kap.org.tr/tr"
 GARANTI_MKK_MEMBER_OID = "4028e4a140f2ed720140f37cb2a601b7"
@@ -54,7 +56,7 @@ def request_json(url: str, data: dict | None = None) -> object:
     request = urllib.request.Request(url, data=payload, headers=headers)
     for attempt in range(4):
         try:
-            with urllib.request.urlopen(request, timeout=60) as response:
+            with urlopen(request, timeout=60) as response:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             if exc.code != 429 or attempt == 3:
@@ -251,7 +253,7 @@ def download_url(url: str, target_dir: Path, fallback_name: str) -> Path:
     request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     for attempt in range(6):
         try:
-            with urllib.request.urlopen(request, timeout=300) as response:
+            with urlopen(request, timeout=300) as response:
                 data = response.read()
                 filename = filename_from_headers(response.headers, fallback_name)
             break

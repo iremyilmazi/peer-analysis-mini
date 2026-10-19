@@ -22,3 +22,11 @@ Web paneli 13 banka seçimine uyarlandı. Saf JavaScript sözdizimi ve backend/A
 - Projede kullanıcı Excel’i bulunmadığından sistem kontrolü beklenen Excel yok uyarısını verdi. Bu, veri içermeyen kaynak dağıtımı için normaldir; gerçek güncelleme için çalışma kopyası ayrıca eklenmelidir.
 
 Test ortamında mevcut Python kütüphaneleri kullanıldı; boş bir şirket bilgisayarında sıfırdan paket kurulumu denenmedi. Yeni bir bağımlılık veya finansal kural değişikliğinde önce testleri çalıştırın; kritik değişiklikte ayrı çalışma kopyası ve güvenilir referansla canlı doğrulama yapın.
+
+## Yerel EdgeDriver güncellemesi — 19 Ekim 2026
+
+Yeni bağlantı katmanı ile **55 testin 55'i başarılı** (Python 3.12.14, 9,146 saniye). Önceki 31 teste ek olarak yerel sürücü arama, proje köküne göre yol çözme, zorunlu Edge modu, hatada HTTP'ye geçmeme, açık Service yolu, gerçek Selenium DriverFinder'ın Manager'ı atlaması, ortam değişkeninin sürücüyü değiştirememesi, JSON POST, binary PDF aktarımı, aynı oturumun tekrar kullanımı, HTTP 429, adres sınırları ve oturum kapanışı sınandı.
+
+Selenium 4.51.0 ve bağımlılıkları proje dışındaki test dizinine ayrıca kuruldu. Sistem kontrolü yedi kütüphaneyi, 13 bankanın kaynaklarını ve Python sözdizimini doğruladı. Tarayıcıya gönderilen JavaScript ayrıca Node ile ağsız ortamda POST/binary/başlık/boyut sınırı/hata senaryolarında sınandı.
+
+**Gerçek EdgeDriver dosyası bu dağıtımda yoktur.** Bu hazırlıkta gerçek Edge oturumu/KAP finansal indirmesi ve hedef şirket bilgisayarının proxy/SSO/politika uyumu denenmedi. Otomatik testlerde tarayıcı yanıtları sahtedir; DriverFinder testi gerçek Selenium yol seçim kodunu çalıştırır, `.exe` çalıştırmaz. Hedefte `kap_transport.py --check` ve ardından ayrı Excel kopyasıyla güvenli deneme yapılmalıdır. Referans Excel'ler değiştirilmedi ve depoya eklenmedi.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-MODULES = ("bs4", "lxml", "openpyxl", "pandas", "pdfplumber", "pypdf")
+MODULES = ("bs4", "lxml", "openpyxl", "pandas", "pdfplumber", "pypdf", "selenium")
 BANKS = (
     ("akbank", "akbank", "akbank"),
     ("denizbank", "denizbank", "denizbank"),
@@ -45,7 +45,7 @@ def main() -> int:
         except Exception as exc:
             errors.append(f"Kutuphane yuklenemedi: {module_name} ({type(exc).__name__})")
 
-    for filename in ("banka_otomatik_guncelle.py", "entegre_excel_olustur.py", "kap_config.json", "panel.py", "requirements.txt", "banka_paneli/index.html", "banka_paneli/app.js"):
+    for filename in ("banka_otomatik_guncelle.py", "entegre_excel_olustur.py", "kap_config.json", "kap_transport.py", "kap_connection.json", "panel.py", "requirements.txt", "banka_paneli/index.html", "banka_paneli/app.js"):
         path = ROOT / filename
         if path.is_file():
             print(f"[OK] Ana dosya: {filename}")
@@ -75,6 +75,16 @@ def main() -> int:
             errors.append(f"Sozdizimi hatasi: {path.relative_to(ROOT)}:{exc.lineno}")
     if not errors:
         print("[OK] Python kaynaklarinin sozdizimi")
+
+    try:
+        from kap_transport import settings
+        connection_settings = settings()
+        print(f"[OK] KAP baglantisi: {connection_settings.mode}")
+        if connection_settings.mode == 'edge':
+            print(f"[OK] Yerel EdgeDriver: {connection_settings.driver}")
+            print("[BILGI] Dosya varligi kontrol edildi; Edge/driver uyumu canli baglantida dogrulanir.")
+    except (OSError, ValueError) as exc:
+        errors.append(f"KAP baglanti ayari: {exc}")
 
     workbook = ROOT / "butunlesik_banka_verisi.xlsx"
     if workbook.is_file():

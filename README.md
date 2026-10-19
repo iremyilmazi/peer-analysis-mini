@@ -52,7 +52,13 @@ Gerekenler:
 - Halihazırda kullanılan, bu projenin banka sayfaları ve dönem düzeniyle uyumlu `butunlesik_banka_verisi.xlsx` dosyasının **çalışma kopyası**.
 - Güncelleme sırasında Excel dosyasının Excel uygulamasında kapalı olması.
 
-Microsoft Excel, Python işleminin çalışması için kurulu olmak zorunda değildir; sonuçları açıp kontrol etmek için uygun bir Excel görüntüleyici gerekir. Codex, Node.js, Chrome/Edge sürücüsü veya Selenium kurulumu gerekmez. Git yalnız GitHub’a yükleme/güncelleme için gerekir; uygulamayı çalıştırmanın şartı değildir.
+Microsoft Excel, Python işleminin çalışması için kurulu olmak zorunda değildir; sonuçları açıp kontrol etmek için uygun bir Excel görüntüleyici gerekir. Codex ve Node.js gerekmez. Git yalnız GitHub’a yükleme/güncelleme için gerekir; uygulamayı çalıştırmanın şartı değildir. Selenium `requirements.txt` ile kurulur; Edge bağlantısında ayrıca yerel Edge ve uyumlu `msedgedriver.exe` gerekir.
+
+### Projeye yerel EdgeDriver eklemek
+
+`msedgedriver.exe` dosyasını `panel.py` ile **aynı klasöre** koymanız yeterlidir. Varsayılan `auto` modunda proje bu dosyayı bulduğunda KAP sorgularını ve Excel/PDF indirmelerini yerel Edge üzerinden yapar; sürücüyü internetten indirmez. `drivers/msedgedriver.exe` ve `driver/msedgedriver.exe` konumları da desteklenir. Driver yoksa önceki HTTP yolu kullanılır; **Edge zorunlu olsun** istiyorsanız `kap_connection.json` içinde `mode` değerini `edge` yapın.
+
+Detaylar, alternatif yollar, sürüm uyumu ve bağlantı testi: [EDGE_DRIVER_KURULUMU.md](docs/EDGE_DRIVER_KURULUMU.md). Driver `.exe` dosyası GitHub’a yüklenmez; hedef bilgisayarda ayrıca eklenir.
 
 ## Windows kurulumu
 
@@ -281,6 +287,8 @@ banka_paneli/index.html + app.js       Arayüz kaynakları
 banka_otomatik_guncelle.py             13 banka, tek dönem, denetim ve kayıt motoru
 entegre_excel_olustur.py               KAP Excel tabloları okuyucusu
 kap_config.json                       Banka yapılandırması; özel anahtar içermez
+kap_connection.json                   auto / edge / http bağlantı ve yerel driver ayarları
+kap_transport.py                      Paylaşılan HTTP / yerel Edge bağlantısı
 sistem_kontrolu.py                    Kütüphane ve kaynak bütünlüğü kontrolleri
 <banka klasörü>/                     Bankaya özel indirme/PDF adaptörleri
 tests/                                Sentetik girdilerle otomatik testler

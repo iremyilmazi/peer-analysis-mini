@@ -21,6 +21,8 @@ from typing import Callable
 
 from openpyxl import load_workbook
 
+from kap_transport import connection as kap_connection
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG = PROJECT_ROOT / "kap_config.json"
@@ -263,7 +265,8 @@ def download_reports(
     previous_after_quarter = getattr(target_module, "INCREMENTAL_AFTER_QUARTER", None)
     target_module.INCREMENTAL_AFTER_QUARTER = after_quarter
     try:
-        quarters = list(module.run_incremental(history_dir, today=today, force=force))
+        with kap_connection():
+            quarters = list(module.run_incremental(history_dir, today=today, force=force))
     finally:
         target_module.INCREMENTAL_AFTER_QUARTER = previous_after_quarter
     for quarter in quarters:

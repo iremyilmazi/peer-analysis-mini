@@ -14,6 +14,12 @@ Ana Excel tek dönem otoritesidir. Son başlık çeyrek kimliğine çevrilir ve 
 
 `--period` bu sınırı gevşetmez. `--skip-download` sadece beklenen dönemin doğrulanmış yerel kaynağını kullanır. İndirici, metadata listesinde başka dönemler görse bile yalnız hedef dönem dosyalarını indirir. Kaynak işleme aşamasına da sadece hedef dönemin dizini verilir.
 
+## KAP bağlantı katmanı
+
+`kap_transport.py`, 13 bankanın kullandığı iki temel indiricinin (TEB ortak tabanı ve Garanti) JSON ve dosya isteklerini aynı bağlantı seçimine yönlendirir. `kap_connection.json` içindeki `auto` modu proje içi yerel EdgeDriver bulunduğunda Edge'i, bulunmadığında mevcut HTTP yolunu seçer. `edge` modunda yerel sürücü zorunludur; seçilmiş Edge başarısızlığında HTTP'ye sessiz geçiş yoktur.
+
+Edge oturumu indirme aşamasında tekrar kullanılır ve normal/hatalı çıkışta kapatılır. İstekler HTTPS KAP alan adları ile sınırlıdır; yanıtın son adresi de doğrulanır. JSON POST ve dosya ekleri tarayıcıdaki `fetch` üzerinden alınır; binary içerik base64 ile Python'a aktarılır ve mevcut dosya/çeyrek doğrulamalarına girer. Mevcut 429 yeniden deneme davranışı korunur. Yanıt başına sınır 64 MiB'dır. TLS/web güvenliği kapatılmaz ve kişisel tarayıcı profili kullanılmaz. Ayrıntılar: [yerel sürücü kurulumu](EDGE_DRIVER_KURULUMU.md).
+
 ## Excel ve PDF
 
 `entegre_excel_olustur.py` KAP’ın `.xls` adıyla sunduğu HTML/XML temelli tabloları okuyabilir. Bankaya özel PDF adaptörleri dipnot tablolarını çıkarır. Bu modüllerde kamuya açık eski rapor düzenlerine ilişkin özel kurallar/uyumluluk mantığı bulunabilir; bunlar ilk çalıştırmada eski rapor indirilmesini gerektirmez.
