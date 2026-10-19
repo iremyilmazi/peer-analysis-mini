@@ -6,6 +6,8 @@ Sürüm: **19 Ekim 2026**. Hedef/test ortamı: **Windows, Python 3.12**.
 
 Kaynak depo: [iremyilmazi/peer-analysis-mini](https://github.com/iremyilmazi/peer-analysis-mini) (public).
 
+**Yalnız CMD erişimi olan bilgisayar için:** [Kopyalanabilir kurulum ve başlatma komutları](docs/CMD_ILE_KURULUM_VE_BASLATMA.md). Kurum deposundan paket kurulumu, yerel EdgeDriver kontrolü ve ilk güvenli deneme adımları içerir; kurum içi adresler public belgeye konulmaz.
+
 Bu klasör tam kaynak projedir; önceki küçük ING düzeltme ZIP’i gibi bir yama değildir. Python ve kütüphaneler ayrıca kurulmalıdır. Bağımsız bir EXE, çevrimiçi hizmet veya boş Excel şablonu üreticisi değildir.
 
 ## İçindekiler

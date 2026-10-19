@@ -25,6 +25,7 @@ FILES = (
     "denizbank/denizbank_otomatik_guncelle.py",
     "denizbank/peerpdf_scripts/denizbank_dipnot.py",
     "docs/BOS_PROJE_ISKELETI.md",
+    "docs/CMD_ILE_KURULUM_VE_BASLATMA.md",
     "docs/EDGE_DRIVER_KURULUMU.md",
     "docs/GITHUB_HAZIRLIK.md",
     "docs/MIMARI_VE_KONTROLLER.md",

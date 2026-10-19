@@ -32,7 +32,7 @@ Bu seçenek hiçbir klasör/dosya oluşturmaz.
 
 ## Oluşan yapı
 
-19 Ekim 2026 sürümünde listede **96 dosya** vardır: 13 bankanın kaynak dosyaları, ortak motor, panelin HTML/JS dosyaları, yapılandırma dosyaları, gereksinimler, belgeler, testler ve bu yardımcı dosyanın kendi adı. Alt klasörler dosya yollarından otomatik oluşturulur. Listede dosya adı olması, içerik de getirildiği anlamına gelmez.
+19 Ekim 2026 güncel sürümünde listede **97 dosya** vardır: 13 bankanın kaynak dosyaları, ortak motor, panelin HTML/JS dosyaları, yapılandırma dosyaları, gereksinimler, belgeler, testler ve bu yardımcı dosyanın kendi adı. CMD rehberi eklenmeden önceki sürümde 96 dosya vardı; önceden oluşturduğunuz iskeleti baştan kurmanız gerekmez. Eklenen rehber çalışma için zorunlu değildir ve GitHub'dan okunabilir. Alt klasörler dosya yollarından otomatik oluşturulur. Listede dosya adı olması, içerik de getirildiği anlamına gelmez.
 
 `.git`, `.venv`, kütüphaneler, önbellek, indirilmiş raporlar, özel Excel'ler ve EdgeDriver bu yapıya dahil değildir. Özellikle **boş/sahte `.xlsx` veya `.exe` oluşturulmaz**. Gerçek çalışma Excel'inizi ve uyumlu gerçek `msedgedriver.exe` dosyasını ayrıca ekleyin. Çalışma sırasında gereken `data`/`outputs` dizinleri dolu uygulama tarafından gerektiğinde oluşturulur; geçmiş arşivi taşımanız gerekmez.
 
