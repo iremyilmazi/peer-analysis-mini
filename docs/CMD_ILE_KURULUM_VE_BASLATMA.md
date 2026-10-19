@@ -206,6 +206,30 @@ Bu ikinci listede paketlerin görünmesi `.venv` kontrolünün yerine geçmez; p
 
 Beklenen sonuç: `No broken requirements found.` Bu mesaj, kurulu paketlerin bildirdiği bağımlılıklarda sorun bulunmadığını söyler; projenin yedi paketinin eksiksiz ve istenen sürümde olduğunu tek başına kanıtlamaz. **C2 ve C3 birlikte başarılı olmalıdır.** Sonra 5. adımda yerel sürücüyü seçip 6. adımda sistem kontrolünü çalıştırın.
 
+<a id="pip-check-sonrasi"></a>
+
+#### C4. `No broken requirements found.` gördükten sonra
+
+Bu sonuç boş bir ortamda da çıkabilir. Bu nedenle yalnız bu mesajı görüp paneli başlatmayın. Aşağıdaki kontrolleri `peer_analysis_mini` ana klasöründe yapın; `.venv` klasörünün içine girmeyin. Ortamı `activate.bat` ile etkinleştirmiş olsanız da açık `.venv\Scripts\python.exe` yolu aynı doğru ortamı seçer.
+
+**1. `.venv` içindeki paketleri filtresiz listeleyin:**
+
+```cmd
+.venv\Scripts\python.exe -m pip list --disable-pip-version-check
+```
+
+Listede `beautifulsoup4`, `lxml`, `openpyxl`, `pandas`, `pdfplumber`, `pypdf` ve `selenium` bulunmalı; sürümleri C2 tablosuyla eşleşmeli. Yalnız `pip` görünüyorsa proje paketleri henüz bu ortama kurulmamıştır. Kurulu paketlerin diğer yardımcı bağımlılıklarla birlikte daha uzun bir liste oluşturması normaldir.
+
+**2. Projenin sistem kontrolünü çalıştırın:**
+
+```cmd
+.venv\Scripts\python.exe -B sistem_kontrolu.py
+```
+
+Yedi kütüphanenin her biri için `[OK] Kutuphane: ...` ve sonunda `SISTEM HAZIR` beklenir. Ana Excel henüz eklenmediyse Excel bulunamadı uyarısı normaldir; dosya güncellemeden önce ayrıca eklenmelidir. Hata varsa sonraki adıma geçmeyin; paket listesini ve sistem kontrolünün çıktısını inceleyin/paylaşın.
+
+Bu komutlar paket kurmaz/kaldırmaz, KAP'a bağlanmaz ve ana Excel'i değiştirmez. Sistem kontrolü sürüm eşitliğinin yerine geçmez; listeyi C2 tablosuyla da karşılaştırın. Edge bağlantı seçimini henüz yapmadıysanız 5. adımla devam edin. Gerçek Edge/KAP testi 7. adımdadır; bu iki kontrol onun yerine geçmez.
+
 ## 5. Yerel EdgeDriver kullanımını zorunlu seçin
 
 Aynı CMD penceresinde:
