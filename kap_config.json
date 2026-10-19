@@ -1,0 +1,85 @@
+{
+  "download_dir": "downloads/kap_finansal_raporlar",
+  "integrated_workbook_path": "butunlesik_banka_verisi.xlsx",
+  "delay_between_reports_seconds": 3,
+  "companies": [
+    {
+      "name": "garanti-bankasi",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2422-turkiye-garanti-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "garanti_bankasi/data/history"
+    },
+    {
+      "name": "is-bankasi",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2425-turkiye-is-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "is_bankasi/data/history"
+    },
+    {
+      "name": "akbank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2413-akbank-t-a-s",
+      "selection_rule": "solo",
+      "source_dir": "akbank/data/history"
+    },
+    {
+      "name": "yapi-kredi-bankasi",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2429-yapi-ve-kredi-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "yapi_kredi_bankasi/data/history"
+    },
+    {
+      "name": "qnb-bank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2417-qnb-bank-a-s",
+      "selection_rule": "latest_two_solo_only",
+      "source_dir": "qnb_bank/data/history"
+    },
+    {
+      "name": "enpara-bank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/6034-enpara-bank-a-s",
+      "selection_rule": "solo",
+      "source_dir": "enpara_bankasi/data/history"
+    },
+    {
+      "name": "denizbank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/genel/4028e4a240f2ef4c01412b0cbaf605a3",
+      "selection_rule": "solo",
+      "source_dir": "denizbank/data/history"
+    },
+    {
+      "name": "turk-ekonomi-bankasi",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/genel/2421-turk-ekonomi-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "teb_bankasi/data/history"
+    },
+    {
+      "name": "halkbank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2423-turkiye-halk-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "halkbank/data/history"
+    },
+    {
+      "name": "ziraat-bankasi",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2419-t-c-ziraat-bankasi-a-s",
+      "selection_rule": "solo",
+      "source_dir": "ziraat_bankasi/data/history"
+    },
+    {
+      "name": "vakifbank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2428-turkiye-vakiflar-bankasi-t-a-o",
+      "selection_rule": "solo",
+      "source_dir": "vakifbank/data/history"
+    },
+    {
+      "name": "hsbc",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/4028e4a14158e41e01415abcf49765df",
+      "selection_rule": "solo",
+      "source_dir": "hsbc/data/history"
+    },
+    {
+      "name": "ing-bank",
+      "url": "https://kap.org.tr/tr/sirket-bilgileri/ozet/2214-ing-bank-a-s",
+      "selection_rule": "solo",
+      "source_dir": "ing_bank/data/history"
+    }
+  ]
+}

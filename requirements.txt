@@ -1,0 +1,7 @@
+# Python 3.12 ile test edilen dogrudan bagimliliklar.
+beautifulsoup4==4.14.3
+lxml==6.1.1
+openpyxl==3.1.5
+pandas==3.0.1
+pdfplumber==0.11.9
+pypdf==6.10.0
