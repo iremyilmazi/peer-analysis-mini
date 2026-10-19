@@ -17,7 +17,7 @@ DEFAULT_PDF_DIR = "denizbank/data/history"
 DEFAULT_CACHE_DIR = "denizbank/data/pdf_cache"
 DEFAULT_WORKERS = 1
 PEERPDF_SCRIPT_PATH = Path(__file__).resolve().parent / "peerpdf_scripts" / "denizbank_dipnot.py"
-CACHE_VERSION = 10
+CACHE_VERSION = 11
 STAGE_PROVISION_TITLE = (
     "Standart nitelikli ve yakin izlemedeki krediler ile yeniden yapilandirilan "
     "yakin izlemedeki kredilere iliskin bilgiler"

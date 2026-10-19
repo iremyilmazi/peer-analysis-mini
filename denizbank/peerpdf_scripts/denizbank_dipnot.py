@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -740,10 +741,55 @@ for _name in dir(_base):
         globals()[_name] = getattr(_base, _name)
 
 
+def _normalize_expense_tables(tables):
+    """Normalize explicit published nil amounts, never labels or blank fields.
+
+    DenizBank publishes nil amounts as two dash glyphs. The shared writer
+    recognizes only a single dash, otherwise leaving these as Excel strings.
+    Keep this rule local to this bank and this note. Reject unexpected amount
+    text outside the shared extractor's per-table warning/skip handler.
+    """
+    result = []
+    found = False
+    for title, headers, rows in tables:
+        if _base.normalize_key(title) != _base.normalize_key(_base.OTHER_OPERATING_EXPENSE_TITLE):
+            result.append((title, headers, rows))
+            continue
+        found = True
+        if not rows:
+            raise RuntimeError("DenizBank diger faaliyet giderleri tablosu bos.")
+        normalized = []
+        for row in rows:
+            if len(row) != 4:
+                raise RuntimeError("DenizBank gider tablosunda beklenmeyen kolon sayisi.")
+            values = list(row)
+            value = values[3]
+            if isinstance(value, str):
+                compact = re.sub(r"\s+", "", value)
+                if re.fullmatch(r"[-\u2013\u2014]+", compact):
+                    values[3] = 0
+                elif compact and not _base._expense_amount_token(value):
+                    raise RuntimeError(f"DenizBank gider tutari sayisal degil: {row[0]!r}: {value!r}")
+            elif value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
+                raise RuntimeError(f"DenizBank gider tutari gecersiz: {row[0]!r}: {value!r}")
+            normalized.append(values)
+        result.append((title, headers, normalized))
+    if not found:
+        raise RuntimeError("DenizBank diger faaliyet giderleri tablosu bulunamadi; islem durduruldu.")
+    return result
+
+
+def extract_all_tables(pdf_path: Path):
+    # Do not replace _base.extract_all_tables: other banks share that module.
+    return _normalize_expense_tables(_base.extract_all_tables(pdf_path))
+
+
 def main() -> None:
-    _patch_base()
-    _patch_qnb_overrides()
-    _base.main()
+    parser = argparse.ArgumentParser(description="DenizBank PDF dipnot tablolarini ayrisitirir.")
+    parser.add_argument("pdf", type=Path)
+    args = parser.parse_args()
+    for title, headers, rows in extract_all_tables(args.pdf):
+        print(f"{title}: {len(rows)} satir, {len(headers)} kolon")
 
 
 if __name__ == "__main__":

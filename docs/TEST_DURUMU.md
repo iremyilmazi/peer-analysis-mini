@@ -36,3 +36,13 @@ Selenium 4.51.0 ve bağımlılıkları proje dışındaki test dizinine ayrıca 
 `BOS_PROJE_OLUSTUR.py` için 14 test eklendi: manifestteki 96 dosyanın eksiksiz ve sıfır bayt oluşturulması, mevcut dosyanın içeriği/zamanının korunması, ikinci çalıştırmada üzerine yazılmaması, tek indirilen dosya ile bağımsız çalışma, varsayılan hedef, listeleme modunda yazma olmaması, dosya/klasör çakışmalarında ön kontrol, hedef dışına çıkma ve link/junction reddi, dosya listesinin mevcut kaynaklarla eşleşmesi.
 
 Testler geçici klasörlerde çalışır; gerçek projeyi veya kullanıcı Excel'lerini boşaltmaz. Yardımcının ürettiği dosyalar yalnız ad/klasör iskeletidir; çalışır uygulama veya gerçek Excel/driver değildir. Genel test komutu yeni testleri de otomatik keşfeder. Son tam çalıştırmada **69 testin 69'u başarılı** (Python 3.12.14, 10,887 saniye).
+
+## DenizBank gider tutar türü düzeltmesi — 19 Ekim 2026
+
+Yeni 10 regresyonla **79 testin 79'u başarılı** (Python 3.12.14, 13,277 saniye). [Düzeltme ve hedef bilgisayarda uygulama yönergesi](DENIZBANK_GIDER_DUZELTMESI.md).
+
+Gerçek 2026Q2 yerel KAP Excel/PDF kaynakları Q1 çalışma dosyasının ayrı kopyasında uçtan uca işlendi: Excel okuma, 21 PDF tablosu, dönem birleştirme ve koruma denetimi başarılı; audit 1.337.433 hücre kontrolü bildirdi. Bu sefer canlı ağ indirmesi yapılmadı; şirket bilgisayarında çalıştırılmadı.
+
+Önceki Q2 sonucuyla tüm banka sayfalarında değer, veri türü ve hücre stili karşılaştırıldı: yalnız DenizBank gider dipnotundaki **sekiz `--` metni sayısal 0 oldu**; stil farkı yok. İlgili dipnotta 20/20 toplam tutarı sayısal, 40/40 TL/YP boş alanı korunmuş. Diğer tutarlar, geçmiş dönemler ve diğer bankalar önceki sonuçla aynı. Kaynak PDF'deki cari dönem satırları ayrıca incelendi. Özgün girdi, referans ve önceki sonuç dosyalarının SHA-256 değerleri değişmedi.
+
+Eski v10 önbellekle başlatılan gerçek test PDF'yi yeniden ayrıştırıp v11 yazdı. Eski referansta aynı `--` metinlerinin bulunması, önceki 12.236 hücre eşleşmesinin tek başına sayısal tür doğruluğunu kanıtlamadığını gösterdi; yeni testler bu açığı kapatır. Bu sonuç diğer bankaların tüm tablolarını yeniden kaynak PDF'leriyle doğruladığımız anlamına gelmez.

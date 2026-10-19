@@ -324,3 +324,7 @@ set "KAP_EDGE_DRIVER=msedgedriver.exe"
 ```
 
 Python kaynakları/bağımlılıklar güncellenmişse gereken kurulum ve kontrolleri tekrar uygulayın. Hata paylaşırken parola/token, kurum içi adres ve kişisel dosya bilgilerini ekran görüntüsünde gizleyin.
+
+## DenizBank 2026Q2 gider dipnotu düzeltmesi
+
+Metin `--` tutarlarının sayısal 0 olarak aktarılması için [iki dosyalık güncelleme ve CMD test yönergesini](DENIZBANK_GIDER_DUZELTMESI.md) izleyin. Yeni paket gerekmez. **Q2 zaten Excel'deyse normal güncelleme Q2'yi onarmaz; Q3'ü hedefler.** Q2 yeniden testi, referansa dokunmadan ayrı bir Q1 çalışma yedeği kopyasında yapılmalıdır.
