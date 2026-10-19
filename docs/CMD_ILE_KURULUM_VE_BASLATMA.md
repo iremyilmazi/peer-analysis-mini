@@ -6,6 +6,8 @@ Bu rehber, dosyaları başka bilgisayara elle kopyalanmış `peer_analysis_mini`
 
 Kurum içi paket deposunun gerçek adresi bu public belgeye özellikle konulmadı. Adresi kendi notunuzdan/BT'den alıp aşağıdaki soruya bir kez yapıştıracaksınız. Adres, kimlik bilgisi ve kurum ayarlarını GitHub'a eklemeyin.
 
+**Paketleri IT'nin yeni adresiyle tek tek kurduysanız ve `.venv` hazırsa:** kurulum komutlarını tekrar çalıştırmadan doğrudan [paket sürümü ve bağımlılık kontrolüne](#paket-surum-kontrolu) geçin. Yalnız `.whl` dosyasını indirmek, paketi Python'a kurmak değildir. Kontroller doğru sonuç vermeden Edge/KAP testine veya güncellemeye başlamayın.
+
 ## 1. Doğru klasörde CMD açın
 
 Masaüstündeki `peer_analysis_mini` klasörünü Dosya Gezgini'nde açın. Adres çubuğuna `cmd` yazıp Enter'a basın. Aşağıdaki komutlar bu klasörde çalıştırılmalıdır.
@@ -113,13 +115,59 @@ Ardından kurulumu başlatın:
 .venv\Scripts\python.exe -m pip install -r requirements.txt --index-url "%KURUM_PYPI_URL%" --trusted-host "%KURUM_PYPI_HOST%" --disable-pip-version-check
 ```
 
-Kurulum başarıyla bitince, A/B ayrımı olmadan:
+Paket deposuna bağlanılamazsa veya `No matching distribution found` çıkarsa burada durun. Önceki adres yerine IT'nin ilettiği güncel onaylı adresi kullanın. `ConnectTimeoutError` sunucuya bağlantı kurulamadığını gösterir; tek başına paket sürümünün depoda olmadığını kanıtlamaz. Kurum deposunda istenen sürüm/Python mimarinize uygun paket bulunmayabilir; sürüm numaralarını rastgele silmeyin. Hata mesajını inceleyin/BT ile görüşün. Gereksinim dosyasından toplu kurulum ve depo seçimi [pip tarafından desteklenir](https://pip.pypa.io/en/stable/cli/pip_install/).
+
+<a id="paket-surum-kontrolu"></a>
+
+### C. Kurulum sonrası paket sürümü ve bağımlılık kontrolü
+
+Bu bölüm, ister toplu ister tek tek kurulum yapmış olun aynıdır. Komutlar paket indirmez/kurmaz ve ana Excel'e yazmaz. Kontrolü uygulamanın kullanacağı `.venv` Python'u üzerinden yapıyoruz; ana Python'da veya başka projede kurulu olması tek başına yeterli değildir.
+
+#### C1. Kullanılan Python ortamını doğrulayın
+
+```cmd
+.venv\Scripts\python.exe -c "import sys; print(sys.executable)"
+```
+
+Çıktı, bu projenin `peer_analysis_mini\.venv\Scripts\python.exe` yolunu göstermeli. Dosya bulunamadı hatasında önce 3. adımı tamamlayın; ortamı silmeyin veya başka projeden `.venv` kopyalamayın.
+
+#### C2. Yedi paketin kurulu sürümlerini gösterin
+
+Aşağıdaki komutu **tek satır olarak** kopyalayın:
+
+```cmd
+.venv\Scripts\python.exe -m pip list --format=freeze --disable-pip-version-check | findstr /i /b "beautifulsoup4== lxml== openpyxl== pandas== pdfplumber== pypdf== selenium=="
+```
+
+Bu sürümün `requirements.txt` dosyasına göre beklenen değerler:
+
+| Paket | Gerekli sürüm |
+|---|---|
+| beautifulsoup4 | 4.14.3 |
+| lxml | 6.1.1 |
+| openpyxl | 3.1.5 |
+| pandas | 3.0.1 |
+| pdfplumber | 0.11.9 |
+| pypdf | 6.10.0 |
+| selenium | 4.51.0 |
+
+Yedi paketin tamamı görünmeli ve sürümleri eşleşmeli. Komut yalnız bu yedi adı süzer; diğer yardımcı bağımlılıkları göstermemesi normaldir. Esas sürüm kaynağı projenin güncel `requirements.txt` dosyasıdır.
+
+Bir paket görünmüyor veya sürümü farklıysa **burada durun**. Listeyi ve sürümleri paylaşın; rastgele `--upgrade`, kaldırma veya sürüm silme uygulamayın. Paketleri ana Python'a kurmuş olabileceğinizi kontrol etmek için yalnız teşhis amaçlı:
+
+```cmd
+python -m pip list --format=freeze --disable-pip-version-check | findstr /i /b "beautifulsoup4== lxml== openpyxl== pandas== pdfplumber== pypdf== selenium=="
+```
+
+Bu ikinci listede paketlerin görünmesi `.venv` kontrolünün yerine geçmez; panel hâlâ `.venv` ortamını kullanacaktır. Doğru ortama kurulum gerekiyorsa 4A/4B'deki `.venv\Scripts\python.exe -m pip ...` komutlarını IT'nin güncel onaylı deposuyla değerlendirin.
+
+#### C3. Yardımcı bağımlılıkların uyumunu kontrol edin
 
 ```cmd
 .venv\Scripts\python.exe -m pip check
 ```
 
-Beklenen sonuç: `No broken requirements found.` Paket deposuna bağlanılamazsa veya `No matching distribution found` çıkarsa burada durun. Kurum deposunda istenen sürüm/Python mimarinize uygun paket bulunmayabilir; sürüm numaralarını rastgele silmeyin. Hata mesajını inceleyin/BT ile görüşün. Gereksinim dosyasından toplu kurulum ve depo seçimi [pip tarafından desteklenir](https://pip.pypa.io/en/stable/cli/pip_install/).
+Beklenen sonuç: `No broken requirements found.` Bu mesaj, kurulu paketlerin bildirdiği bağımlılıklarda sorun bulunmadığını söyler; projenin yedi paketinin eksiksiz ve istenen sürümde olduğunu tek başına kanıtlamaz. **C2 ve C3 birlikte başarılı olmalıdır.** Sonra 5. adımda yerel sürücüyü seçip 6. adımda sistem kontrolünü çalıştırın.
 
 ## 5. Yerel EdgeDriver kullanımını zorunlu seçin
 
@@ -135,7 +183,7 @@ Bu seçim yalnız bu CMD ve buradan başlatılan süreçlerde geçerlidir. Sür�
 ## 6. Sistem kontrolünü çalıştırın
 
 ```cmd
-.venv\Scripts\python.exe sistem_kontrolu.py
+.venv\Scripts\python.exe -B sistem_kontrolu.py
 ```
 
 Beklenen ana satırlar:
