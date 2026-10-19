@@ -153,7 +153,44 @@ Bu sürümün `requirements.txt` dosyasına göre beklenen değerler:
 
 Yedi paketin tamamı görünmeli ve sürümleri eşleşmeli. Komut yalnız bu yedi adı süzer; diğer yardımcı bağımlılıkları göstermemesi normaldir. Esas sürüm kaynağı projenin güncel `requirements.txt` dosyasıdır.
 
-Bir paket görünmüyor veya sürümü farklıysa **burada durun**. Listeyi ve sürümleri paylaşın; rastgele `--upgrade`, kaldırma veya sürüm silme uygulamayın. Paketleri ana Python'a kurmuş olabileceğinizi kontrol etmek için yalnız teşhis amaçlı:
+Bir paket görünmüyor veya sürümü farklıysa **burada durun**. Listeyi ve sürümleri paylaşın; rastgele `--upgrade`, kaldırma veya sürüm silme uygulamayın.
+
+<a id="paket-listesi-bos"></a>
+
+##### Filtreli komut hiçbir çıktı vermiyorsa
+
+`| findstr ...` bölümü yalnız belirtilen yedi paketin satırlarını gösterir. Filtre eşleşme bulamazsa CMD'de hiçbir çıktı görünmeyebilir. Bu **kurulumun başarılı olduğunu göstermez**; paketlerin `.venv` yerine başka Python ortamına kurulmuş olması mümkündür. Önce filtreyi kaldırıp iki ortamı ayrı ayrı görelim. Aşağıdaki komutlar indirme/kurulum/kaldırma yapmaz ve Excel'i değiştirmez.
+
+**1. Projenin `.venv` ortamındaki bütün paketler:**
+
+```cmd
+.venv\Scripts\python.exe -m pip list --disable-pip-version-check
+```
+
+**2. `python` komutunun kullandığı ortamdaki bütün paketler:**
+
+```cmd
+python -m pip list --disable-pip-version-check
+```
+
+`python` her bilgisayarda mutlaka ana/sistem Python'u değildir; etkinleştirilmiş bir ortamı da gösterebilir. Hangi Python'ları karşılaştırdığımızı doğrulamak için:
+
+```cmd
+.venv\Scripts\python.exe -c "import sys; print(sys.executable)"
+```
+
+```cmd
+python -c "import sys; print(sys.executable)"
+```
+
+- İlk listede yalnız `pip` gibi birkaç paket varsa, gereken proje paketleri bu `.venv` ortamına henüz kurulmamış olabilir.
+- İkinci listede proje paketleri olup ilkinde yoksa, farklı ortama kurulum yapılmış olabilir; Python yollarını da karşılaştırın.
+- İki Python yolu aynıysa aynı ortamı kontrol ediyorsunuz; bunu ana Python ile ayrı karşılaştırma sanmayın.
+- Filtresiz komut da çıktı vermiyorsa veya hata veriyorsa çalıştırılan komutun tamamını ve ekran görüntüsünü paylaşın. Gerekli sürümleri doğrulamadan paneli başlatmayın.
+
+İki paket listesini ve gerekirse Python yollarını kontrol ederek ilerleyin; henüz paket kaldırmayın, `.venv` silmeyin veya rastgele yeniden kurulum yapmayın. Çıktı paylaşırken kişisel dosya yolu/kurum bilgilerini gizleyin. Sadece bu iki listeyi karşılaştırmak istenen sürümlerin uyumlu olduğunu kanıtlamaz; yukarıdaki sürüm tablosu ve C3 kontrolü de gereklidir.
+
+Ana/diğer Python ortamından yalnız yedi paketi süzerek görmek isterseniz, bu isteğe bağlı ek komuttur:
 
 ```cmd
 python -m pip list --format=freeze --disable-pip-version-check | findstr /i /b "beautifulsoup4== lxml== openpyxl== pandas== pdfplumber== pypdf== selenium=="
