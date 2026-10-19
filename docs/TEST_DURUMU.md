@@ -30,3 +30,9 @@ Yeni bağlantı katmanı ile **55 testin 55'i başarılı** (Python 3.12.14, 9,1
 Selenium 4.51.0 ve bağımlılıkları proje dışındaki test dizinine ayrıca kuruldu. Sistem kontrolü yedi kütüphaneyi, 13 bankanın kaynaklarını ve Python sözdizimini doğruladı. Tarayıcıya gönderilen JavaScript ayrıca Node ile ağsız ortamda POST/binary/başlık/boyut sınırı/hata senaryolarında sınandı.
 
 **Gerçek EdgeDriver dosyası bu dağıtımda yoktur.** Bu hazırlıkta gerçek Edge oturumu/KAP finansal indirmesi ve hedef şirket bilgisayarının proxy/SSO/politika uyumu denenmedi. Otomatik testlerde tarayıcı yanıtları sahtedir; DriverFinder testi gerçek Selenium yol seçim kodunu çalıştırır, `.exe` çalıştırmaz. Hedefte `kap_transport.py --check` ve ardından ayrı Excel kopyasıyla güvenli deneme yapılmalıdır. Referans Excel'ler değiştirilmedi ve depoya eklenmedi.
+
+## Tek dosyalık boş iskelet — 19 Ekim 2026
+
+`BOS_PROJE_OLUSTUR.py` için 14 test eklendi: manifestteki 96 dosyanın eksiksiz ve sıfır bayt oluşturulması, mevcut dosyanın içeriği/zamanının korunması, ikinci çalıştırmada üzerine yazılmaması, tek indirilen dosya ile bağımsız çalışma, varsayılan hedef, listeleme modunda yazma olmaması, dosya/klasör çakışmalarında ön kontrol, hedef dışına çıkma ve link/junction reddi, dosya listesinin mevcut kaynaklarla eşleşmesi.
+
+Testler geçici klasörlerde çalışır; gerçek projeyi veya kullanıcı Excel'lerini boşaltmaz. Yardımcının ürettiği dosyalar yalnız ad/klasör iskeletidir; çalışır uygulama veya gerçek Excel/driver değildir. Genel test komutu yeni testleri de otomatik keşfeder. Son tam çalıştırmada **69 testin 69'u başarılı** (Python 3.12.14, 10,887 saniye).

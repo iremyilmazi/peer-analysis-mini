@@ -62,6 +62,8 @@ Detaylar, alternatif yollar, sürüm uyumu ve bağlantı testi: [EDGE_DRIVER_KUR
 
 ## Windows kurulumu
 
+Yalnız klasör/dosya adlarını **boş içerikle** oluşturmak istiyorsanız tek başına [BOS_PROJE_OLUSTUR.py](BOS_PROJE_OLUSTUR.py) dosyasını kullanabilirsiniz. Kullanım: `python BOS_PROJE_OLUSTUR.py --hedef "C:\Projeler\peer-analysis-mini"`. Mevcut dosyaların üzerine yazmaz. Bu işlem kod indirmez ve çalışır uygulama kurmaz; dolu kaynaklar için depoyu klonlayın/indirin. [Boş iskelet rehberi](docs/BOS_PROJE_ISKELETI.md).
+
 ### 1. Klasörü yerleştirin
 
 Bu klasörün tamamını örneğin aşağıdaki konuma koyun:
