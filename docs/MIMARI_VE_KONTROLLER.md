@@ -14,6 +14,10 @@ Ana Excel tek dönem otoritesidir. Son başlık çeyrek kimliğine çevrilir ve 
 
 `--period` bu sınırı gevşetmez. `--skip-download` sadece beklenen dönemin doğrulanmış yerel kaynağını kullanır. İndirici, metadata listesinde başka dönemler görse bile yalnız hedef dönem dosyalarını indirir. Kaynak işleme aşamasına da sadece hedef dönemin dizini verilir.
 
+20 Ekim 2026 itibarıyla varsayılan akış **önce yalnız hedef dönemin klasörünü** denetler. Mevcut KAP Excel'i ve PDF temel dosya doğrulamasından geçiyorsa, KAP/Edge oturumu açmadan, bildirim sorgulamadan ve indirme denemeden bu kaynaklarla işlem sürer. Panel ve bütün banka girişleri aynı ortak motoru kullanır; ek seçenek işaretlemek gerekmez. Eksik/geçersiz kaynak varsa normal KAP akışına gidilir; sonraki kaynak ve finansal işleme kontrolleri kaldırılmaz. Sonraki ayrıştırma adımı hata verirse sırf bu hata nedeniyle tekrar indirmeye dönülmez.
+
+Bu kontrol kaynakları içerik düzeyinde doğru kabul eden tam bir finansal onay değildir: mevcut boyut/imza/giriş sayfası kontrolleri uygulanır, ayrıştırma ve dönem denetimleri daha sonra yapılır. Başka çeyreğin klasörü hedefin yerine geçmez. Eski `--force-download` argümanı uyumluluk için kabul edilse de geçerli yerel hedef kaynaklarını yeniden indirtmez. Arayüze yeniden indir seçeneği eklenmedi.
+
 ## KAP bağlantı katmanı
 
 `kap_transport.py`, 13 bankanın kullandığı iki temel indiricinin (TEB ortak tabanı ve Garanti) JSON ve dosya isteklerini aynı bağlantı seçimine yönlendirir. `kap_connection.json` içindeki `auto` modu proje içi yerel EdgeDriver bulunduğunda Edge'i, bulunmadığında mevcut HTTP yolunu seçer. `edge` modunda yerel sürücü zorunludur; seçilmiş Edge başarısızlığında HTTP'ye sessiz geçiş yoktur.

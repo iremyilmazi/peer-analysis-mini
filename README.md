@@ -2,7 +2,7 @@
 
 Mevcut banka Excel’ini KAP’taki **yalnız bir sonraki solo finansal dönem** ile güncelleyen yerel Python uygulaması. 13 banka, tarayıcıda açılan web paneli ve komut satırı kullanımı içerir.
 
-Sürüm: **19 Ekim 2026**. Hedef/test ortamı: **Windows, Python 3.12**.
+Sürüm: **20 Ekim 2026**. Hedef/test ortamı: **Windows, Python 3.12**.
 
 Kaynak depo: [iremyilmazi/peer-analysis-mini](https://github.com/iremyilmazi/peer-analysis-mini) (public).
 
@@ -31,8 +31,8 @@ Her işlemde bir banka seçilir. Aynı Excel üzerinde bankalar sırayla çalı�
 
 1. Excel’in seçili banka sayfasındaki son geçerli dönem başlığı okunur.
 2. Hedef bunun **tam bir çeyrek sonrası** olarak belirlenir.
-3. KAP’ta bu dönemin konsolide olmayan (solo) bildirimi aranır.
-4. Yalnız hedef dönemin Excel ve PDF ekleri indirilir.
+3. Hedef dönemin klasöründeki kaynak KAP Excel’i ve PDF doğrulanır. İkisi de kullanılabilir durumdaysa KAP’a bağlanmadan yerel kaynaklar kullanılır.
+4. Yerel kaynaklar eksik/geçersizse KAP’ta yalnız bu dönemin konsolide olmayan (solo) bildirimi aranır ve hedef dönem ekleri için indirme akışı çalışır.
 5. Finansal tablolar ve PDF dipnotları geçici kopyada işlenir.
 6. Yalnız yeni dönemin TL / YP / TOPLAM kolonları mevcut şablona aktarılır.
 7. Eski dönemler ve diğer banka hücreleri değer/biçim bakımından korunuyor mu kontrol edilir.

@@ -46,3 +46,11 @@ Gerçek 2026Q2 yerel KAP Excel/PDF kaynakları Q1 çalışma dosyasının ayrı 
 Önceki Q2 sonucuyla tüm banka sayfalarında değer, veri türü ve hücre stili karşılaştırıldı: yalnız DenizBank gider dipnotundaki **sekiz `--` metni sayısal 0 oldu**; stil farkı yok. İlgili dipnotta 20/20 toplam tutarı sayısal, 40/40 TL/YP boş alanı korunmuş. Diğer tutarlar, geçmiş dönemler ve diğer bankalar önceki sonuçla aynı. Kaynak PDF'deki cari dönem satırları ayrıca incelendi. Özgün girdi, referans ve önceki sonuç dosyalarının SHA-256 değerleri değişmedi.
 
 Eski v10 önbellekle başlatılan gerçek test PDF'yi yeniden ayrıştırıp v11 yazdı. Eski referansta aynı `--` metinlerinin bulunması, önceki 12.236 hücre eşleşmesinin tek başına sayısal tür doğruluğunu kanıtlamadığını gösterdi; yeni testler bu açığı kapatır. Bu sonuç diğer bankaların tüm tablolarını yeniden kaynak PDF'leriyle doğruladığımız anlamına gelmez.
+
+## Yerel kaynak varsa KAP'a bağlanmama — 20 Ekim 2026
+
+Yedi yeni regresyonla **86 testin 86'sı başarılı** (Python 3.12.14, 23,559 saniye). Yeni testlerde 13 banka ayrı ayrı çalıştırılarak geçerli yerel hedef kaynakları varken indiricinin ve `kap_connection` girişinin hiç çağrılmadığı, yalnız beklenen çeyreğin işlendiği ve audit'te indirilen dönem listesinin boş kaldığı doğrulandı. Deneme girdisi ve kaynak dosyalarının SHA-256 değerleri korundu.
+
+Ek kapsam: iki kaynaktan birinin veya ikisinin eksik olması; sıfır bayt, yanlış imza ve giriş sayfası kaynakları; başka çeyreğin hedef yerine kullanılmaması; açık dönem seçimi; eski zorla indirme argümanının geçerli yerel kaynakları geçersiz kılmaması; sonraki PDF işleme hatasında tekrar KAP'a dönülmemesi ve ana girdinin değişmemesi.
+
+Bu testler sentetik Excel girdileri ve imza/boyut kontrolüne uygun sentetik kaynaklarla işlem yönlendirmesini sınar. Excel/PDF ayrıştırma adımları bu yeni senaryolarda taklit edilir; gerçek KAP finansal içeriğinin doğruluğu, canlı ağ bağlantısı ve şirket bilgisayarı bu çalıştırmada yeniden sınanmadı. Mevcut finansal kurallar ve kaynak doğrulamaları değiştirilmedi. Hedef bilgisayara yalnız güncel `banka_otomatik_guncelle.py` aktarılmalıdır; [CMD rehberinde](CMD_ILE_KURULUM_VE_BASLATMA.md) uygulama adımları ve beklenen log vardır.

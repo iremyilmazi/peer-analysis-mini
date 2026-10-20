@@ -762,11 +762,25 @@ def run_bank(spec: BankSpec, args: argparse.Namespace) -> int:
         log("Baslangic", f"{spec.display_name}; ana Excel gecici kopyada islenecek.")
         log('Hedef', f'Excel son donem: {latest_existing_period}; yalniz hedef: {expected_period}')
 
+        # A prior attempt may have downloaded this quarter before a later
+        # processing step failed. Reuse its validated sources without opening
+        # KAP/Edge or querying disclosures, even with the legacy force flag.
+        local_sources = None
+        if not args.skip_download:
+            try:
+                local_sources = validate_quarter_dir(history_dir, period_to_quarter(expected_period))
+            except (OSError, ValueError, RuntimeError):
+                pass  # Missing/unusable local sources require the normal KAP path.
+
         if args.skip_download:
             downloaded: list[str] = []
             available = complete_history_periods(history_dir)
             new_periods = [expected_period] if expected_period in available else []
             log("KAP", "Indirme atlandi; lokal history dogrulandi.")
+        elif local_sources is not None:
+            downloaded = []
+            new_periods = [expected_period]
+            log("KAP", f"{expected_period}: yerel PDF ve KAP Excel dogrulandi; KAP baglantisi ve indirme atlandi.")
         else:
             downloaded = timed(
                 report,

@@ -311,7 +311,7 @@ Bu alternatifin adresi `http://127.0.0.1:8766` olur. Port dolu hatasında aynı 
 butunlesik_banka_verisi_denizbank_DRY_RUN.xlsx
 ```
 
-Kaynak dosyalar `denizbank/data/history/YYYYQn/` altında, audit raporları `outputs/otomatik_guncelleme_audit/` altında oluşur. Klasörler gerektiğinde oluşturulur. Güvenli denemede ana Excel değişmez; kaynak indirmeleri ve ayrı sonuç dosyası oluşur. Aynı banka denemesi tekrarlandığında önceki deneme çıktısı değişebilir; önemli sonucu farklı adla saklayın.
+Kaynak dosyalar `denizbank/data/history/YYYYQn/` altında, audit raporları `outputs/otomatik_guncelleme_audit/` altında oluşur. Klasörler gerektiğinde oluşturulur. Güvenli denemede ana Excel değişmez; gerekiyorsa kaynak indirilir ve ayrı sonuç dosyası oluşur. Geçerli hedef kaynakları zaten varsa KAP bağlantısı ve indirme atlanır. Aynı banka denemesi tekrarlandığında önceki deneme çıktısı değişebilir; önemli sonucu farklı adla saklayın.
 
 ## Sonraki açılışlar
 
@@ -324,6 +324,24 @@ set "KAP_EDGE_DRIVER=msedgedriver.exe"
 ```
 
 Python kaynakları/bağımlılıklar güncellenmişse gereken kurulum ve kontrolleri tekrar uygulayın. Hata paylaşırken parola/token, kurum içi adres ve kişisel dosya bilgilerini ekran görüntüsünde gizleyin.
+
+## Hedef dönemin dosyaları zaten varsa — 20 Ekim 2026
+
+PDF ve **kaynak KAP Excel'i** bankanın `data/history/YYYYQn/` klasöründe mevcut ve dosya doğrulamasından geçiyorsa artık panel otomatik olarak yerelden devam eder. KAP'a bağlanmaz, Edge oturumu açmaz ve yeniden indirmeyi denemez. `--skip-download` yazmanız veya panelde ek seçenek seçmeniz gerekmez. Dosyalardan biri eksik/geçersizse normal KAP akışı çalışır. Son hedef yine ana Excel'deki dönemin yalnız bir sonrasıdır.
+
+Örnek hedef klasörler: `garanti_bankasi/data/history/2026Q2/`, `ing_bank/data/history/2026Q2/`. Birleştirilmiş sonuç Excel'i, kaynak KAP Excel'inin yerine geçmez. PDF cache bulunması da tek başına yeterli değildir; asıl PDF ve kaynak Excel klasörde bulunmalıdır.
+
+Diğer bilgisayarda bu davranış için **yalnız proje kökündeki [banka_otomatik_guncelle.py](../banka_otomatik_guncelle.py)** dosyasının tam içeriğini GitHub'daki güncel içerikle değiştirin. Paneli önce Ctrl+C ile kapatın, dosyayı UTF-8 kaydedin ve yeniden açın. Banka dosyaları, `BASLAT.cmd`, panel kaynakları ve paketler bu güncelleme için değişmez. Önceki eksik Garanti/ING kaynaklarını ayrıca düzeltmiş olmanız gerekir; bu yenilik eksik fonksiyon hatalarını gidermez.
+
+Dosyayı kaydettikten sonra proje kökünde sözdizimini kontrol edebilirsiniz:
+
+```cmd
+.venv\Scripts\python.exe -m py_compile banka_otomatik_guncelle.py
+```
+
+Başarıda çıktı vermemesi normaldir. Panelde ilk denemeyi **güvenli deneme** ile yapın. Hedef dönemin dosyaları mevcutsa logda `yerel PDF ve KAP Excel dogrulandi; KAP baglantisi ve indirme atlandi` mesajını bekleyin. Önceki denemede kaynaklar indirilip sonraki kod adımında hata olduysa, tekrar denemede aynı kaynaklar kullanılır. Boş veya başka döneme ait klasör bu davranışı tetiklemez.
+
+Ana Excel'de Q2 zaten varsa hedef Q3 olur; yerelde Q2 dosyalarının bulunması Q2'yi yeniden yazdırmaz. Referans Excel'i hiçbir şekilde değiştirmeyin.
 
 ## DenizBank 2026Q2 gider dipnotu düzeltmesi
 
