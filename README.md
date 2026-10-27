@@ -8,8 +8,6 @@ Kaynak depo: [iremyilmazi/peer-analysis-mini](https://github.com/iremyilmazi/pee
 
 **Yalnız CMD erişimi olan bilgisayar için:** [Kopyalanabilir kurulum ve başlatma komutları](docs/CMD_ILE_KURULUM_VE_BASLATMA.md). Kurum deposundan paket kurulumu, yerel EdgeDriver kontrolü ve ilk güvenli deneme adımları içerir; kurum içi adresler public belgeye konulmaz.
 
-**Sunum notları:** [CEO konuşmacı notları — tüm sunum](docs/CEO_Handnotes_Tum_Sunum.md). Word belgesinin metni, başlıkları ve vurguları korunarak Markdown'a aktarılmıştır; uygulamanın çalışması için gerekli değildir.
-
 Bu klasör tam kaynak projedir; önceki küçük ING düzeltme ZIP’i gibi bir yama değildir. Python ve kütüphaneler ayrıca kurulmalıdır. Bağımsız bir EXE, çevrimiçi hizmet veya boş Excel şablonu üreticisi değildir.
 
 ## İçindekiler
