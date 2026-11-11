@@ -1887,6 +1887,17 @@ def _apply_2026q3_layout_corrections(
         if title == INSTALLMENT_COMMERCIAL_TITLE:
             if rows:
                 rows = [*rows[:-1], ["Toplam", "216.963", "240.259", "473.531"]]
+        elif title.startswith("Birinci ve ikinci grup krediler"):
+            # In the Q3 PDF the visual baselines of the first two totals
+            # overlap the following row.  The raw text consequently shifted
+            # every result one row upwards and lost both Kredi Kartları and
+            # the grand total.
+            rows = [
+                ["Kurumsal / Ticari Krediler", "", "", "6.163"],
+                ["Tüketici Kredileri", "", "", "2.359"],
+                ["Kredi Kartları", "", "", "38.929"],
+                ["Toplam", "", "", "47.451"],
+            ]
         elif title in corrected_rows and corrected_rows[title]:
             rows = corrected_rows[title]
         output.append((title, headers, rows))
