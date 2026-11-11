@@ -28,13 +28,20 @@ class BankEntry:
     key: str
     name: str
     script: Path
+    side_updates: bool
 
 
 BANKS = tuple(
     BankEntry(spec.key, spec.display_name, ROOT / spec.folder /
-              f"{spec.downloader_module.rsplit('.', 1)[1].removesuffix('_kap_history_indir')}_otomatik_guncelle.py")
+              f"{spec.downloader_module.rsplit('.', 1)[1].removesuffix('_kap_history_indir')}_otomatik_guncelle.py",
+              spec.key != "ing")
     for spec in BANK_SPECS.values()
 )
+
+SIDE_OPERATIONS = {
+    "stage": ("birinci_ikinci_asama_krediler.xlsx", "Kredi aşamaları"),
+    "deposit": ("mevduat_faiz.xlsx", "Mevduat faizi"),
+}
 
 COLORS = {
     "reset": "\033[0m",
@@ -83,26 +90,59 @@ def validate_installation() -> list[str]:
     for bank in BANKS:
         if not bank.script.is_file():
             errors.append(f"Eksik script: {bank.script}")
-    for required in (ROOT / "banka_otomatik_guncelle.py", ROOT / "kap_config.json"):
+    for required in (
+        ROOT / "banka_otomatik_guncelle.py",
+        ROOT / "yan_excel_otomatik_guncelle.py",
+        ROOT / "yan_excel_donem_ekle.py",
+        ROOT / "kap_config.json",
+    ):
         if not required.is_file():
             errors.append(f"Eksik ortak dosya: {required}")
+    for bank in BANKS:
+        if not bank.side_updates:
+            continue
+        try:
+            module_name, _sheet_name = __import__("yan_excel_otomatik_guncelle", fromlist=["SIDE_MODULES"]).SIDE_MODULES[bank.key]
+            module_path = ROOT / (module_name.replace(".", "/") + ".py")
+            if not module_path.is_file():
+                errors.append(f"Eksik yan Excel adaptörü: {module_path}")
+        except (ImportError, KeyError, AttributeError):
+            errors.append(f"Yan Excel tanımı okunamadı: {bank.key}")
     return errors
 
 
-def workbook_context(bank_key: str = 'akbank') -> dict:
-    workbook = ROOT / 'butunlesik_banka_verisi.xlsx'
+def workbook_context(bank_key: str = 'akbank', operation: str = 'main') -> dict:
     try:
         from banka_otomatik_guncelle import BANKS as specs,workbook_periods,period_to_quarter,next_period
         bank = find_bank(bank_key)
+        if operation not in {'main', *SIDE_OPERATIONS}:
+            raise ValueError('Bilinmeyen güncelleme alanı')
+        if operation == 'main':
+            workbook = ROOT / 'butunlesik_banka_verisi.xlsx'
+            sheet_name = specs[bank.key].company_name
+        else:
+            if not bank.side_updates:
+                raise ValueError(f'{bank.name} için yan Excel güncellemesi tanımlı değil.')
+            from yan_excel_otomatik_guncelle import SIDE_MODULES
+            workbook = ROOT / SIDE_OPERATIONS[operation][0]
+            sheet_name = SIDE_MODULES[bank.key][1]
         if not workbook.is_file():
-            raise ValueError('Güncel Excel’inizi bu klasöre butunlesik_banka_verisi.xlsx adıyla koyun.')
-        periods = workbook_periods(workbook,specs[bank.key].company_name)
+            raise ValueError(f'Güncel Excel’inizi bu klasöre {workbook.name} adıyla koyun.')
+        periods = workbook_periods(workbook,sheet_name)
         if not periods:
-            raise ValueError(f'Excel’in {bank.name} sayfasında geçerli bir dönem başlığı yok.')
+            raise ValueError(f'Excel’in {sheet_name} sayfasında geçerli bir dönem başlığı yok.')
         latest = max(periods,key=period_to_quarter)
-        return {'ready':True,'bank':bank.key,'workbook':workbook.name,'latest_period':latest,'next_period':next_period(latest)}
+        return {
+            'ready': True,
+            'bank': bank.key,
+            'operation': operation,
+            'workbook': workbook.name,
+            'latest_period': latest,
+            'next_period': next_period(latest),
+        }
     except Exception as exc:
-        return {'ready':False,'workbook':workbook.name,'error':str(exc)}
+        workbook_name = SIDE_OPERATIONS.get(operation, ('butunlesik_banka_verisi.xlsx',))[0]
+        return {'ready':False,'operation':operation,'workbook':workbook_name,'error':str(exc)}
 
 
 def choose_bank() -> BankEntry | None:
@@ -179,13 +219,24 @@ DASHBOARD = DashboardState()
 PROGRESS_BY_STEP = {
     "Baslangic": 4, "1-KAP": 18, "KAP": 18, "2-EXCEL": 43,
     "3-PDF": 68, "PDF": 68, "3B-BIRLESTIR": 82,
-    "4-KONTROL": 94, "Kayit": 98, "Dry-run": 98, "Tamamlandi": 100,
+    "4-KONTROL": 94, "2-YAN-EXCEL": 68, "3-KONTROL": 94,
+    "Kayit": 98, "Dry-run": 98, "Tamamlandi": 100,
 }
 
 
-def _dashboard_worker(bank: BankEntry, dry_run: bool) -> None:
-    audit = ROOT / "outputs" / "otomatik_guncelleme_audit" / f"{bank.key}_panel_{time.time_ns()}.json"
-    command = [sys.executable, '-B', "-u", str(bank.script), "--audit-report", str(audit), '--workers', '1']
+def _dashboard_worker(bank: BankEntry, dry_run: bool, operation: str = 'main') -> None:
+    if operation == 'main':
+        audit = ROOT / "outputs" / "otomatik_guncelleme_audit" / f"{bank.key}_panel_{time.time_ns()}.json"
+        command = [sys.executable, '-B', "-u", str(bank.script), "--audit-report", str(audit), '--workers', '1']
+        output_label, backup_label = 'Güncellenen Excel', 'Güncelleme Öncesi Yedek'
+    else:
+        product_label = SIDE_OPERATIONS[operation][1]
+        audit = ROOT / "outputs" / "yan_excel_guncelleme_audit" / f"{bank.key}_{operation}_panel_{time.time_ns()}.json"
+        command = [
+            sys.executable, '-B', '-u', str(ROOT / 'yan_excel_otomatik_guncelle.py'),
+            '--bank', bank.key, '--product', operation, '--audit-report', str(audit), '--workers', '1',
+        ]
+        output_label, backup_label = f'Güncellenen {product_label} Excel’i', f'{product_label} Güncelleme Öncesi Yedek'
     if dry_run:
         command.append("--dry-run")
     environment = os.environ.copy()
@@ -216,7 +267,7 @@ def _dashboard_worker(bank: BankEntry, dry_run: bool) -> None:
             except (OSError, json.JSONDecodeError):
                 report = {}
         files: list[dict[str, str]] = []
-        for key, label in (("output", "Güncellenen Excel"), ("backup", "Güncelleme Öncesi Yedek")):
+        for key, label in (("output", output_label), ("backup", backup_label)):
             value = report.get(key)
             if value:
                 files.append({"label": label, "path": str(value)})
@@ -232,7 +283,7 @@ def _dashboard_worker(bank: BankEntry, dry_run: bool) -> None:
                     DASHBOARD.state = 'NO_NEW_PERIOD'
                     DASHBOARD.step = 'Yeni dönem yok'
                     DASHBOARD.progress = 0
-                    DASHBOARD.logs.append('[SONUÇ] Beklenen sonraki dönem bulunamadı. Ana Excel değişmedi.')
+                    DASHBOARD.logs.append('[SONUÇ] Beklenen sonraki dönem bulunamadı. Dosya değişmedi.')
                 elif report.get('status') == 'OK':
                     DASHBOARD.state = "OK"
                     DASHBOARD.step = "Tamamlandi"
@@ -314,11 +365,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         if parsed.path == "/api/banks":
-            self._json({"banks": [{"key": item.key, "name": item.name} for item in BANKS]})
+            self._json({"banks": [{"key": item.key, "name": item.name, "side_updates": item.side_updates} for item in BANKS]})
             return
         if parsed.path == '/api/context':
             query = parse_qs(parsed.query)
-            self._json(workbook_context(query.get('bank', ['akbank'])[0]))
+            self._json(workbook_context(query.get('bank', ['akbank'])[0], query.get('operation', ['main'])[0]))
             return
         if parsed.path == "/api/status":
             query = parse_qs(parsed.query)
@@ -337,9 +388,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
             payload = self._body()
             if self.path == "/api/run":
                 bank = find_bank(str(payload.get('bank','')))
+                operation = str(payload.get('operation', 'main'))
+                if operation not in {'main', *SIDE_OPERATIONS}:
+                    raise ValueError('Bilinmeyen güncelleme alanı')
+                if operation != 'main' and not bank.side_updates:
+                    raise ValueError(f'{bank.name} için yan Excel güncellemesi tanımlı değil.')
                 if not isinstance(payload.get('dry_run', True), bool):
                     raise ValueError('dry_run true veya false olmali')
-                context = workbook_context(bank.key)
+                context = workbook_context(bank.key, operation)
                 if not context['ready']:
                     self._json({'error':context['error']},400)
                     return
@@ -354,10 +410,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     DASHBOARD.progress = 2
                     DASHBOARD.started = DASHBOARD.last_response = time.monotonic()
                     DASHBOARD.finished = 0.0
-                    DASHBOARD.logs = [f"[START] {bank.name} | {'Güvenli deneme' if payload.get('dry_run', True) else 'Gerçek güncelleme'}"]
+                    label = 'Ana Excel' if operation == 'main' else SIDE_OPERATIONS[operation][1]
+                    DASHBOARD.logs = [f"[START] {bank.name} | {label} | {'Güvenli deneme' if payload.get('dry_run', True) else 'Gerçek güncelleme'}"]
                     DASHBOARD.files = []
                     DASHBOARD.error = ""
-                threading.Thread(target=_dashboard_worker, args=(bank, bool(payload.get("dry_run", True))), daemon=True).start()
+                threading.Thread(target=_dashboard_worker, args=(bank, bool(payload.get("dry_run", True)), operation), daemon=True).start()
                 self._json(DASHBOARD.snapshot(0), 202)
                 return
             if self.path == "/api/stop":

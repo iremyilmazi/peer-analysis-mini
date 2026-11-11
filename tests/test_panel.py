@@ -41,6 +41,8 @@ class PanelTests(unittest.TestCase):
         code,data = self.request('GET','/api/banks')
         self.assertEqual(200,code)
         self.assertEqual(13,len(data['banks']))
+        self.assertFalse(next(bank for bank in data['banks'] if bank['key'] == 'ing')['side_updates'])
+        self.assertTrue(next(bank for bank in data['banks'] if bank['key'] == 'akbank')['side_updates'])
 
     def test_missing_workbook_blocks_run(self):
         self.assertFalse(self.request('GET','/api/context?bank=ing')[1]['ready'])
@@ -61,9 +63,10 @@ class PanelTests(unittest.TestCase):
     def test_default_dry_run_and_concurrency_guard(self):
         workbook(self.root/'butunlesik_banka_verisi.xlsx')
         called = threading.Event()
-        def worker(bank,dry_run):
+        def worker(bank,dry_run,operation):
             self.assertEqual('ing',bank.key)
             self.assertTrue(dry_run)
+            self.assertEqual('main',operation)
             called.set()
         with patch.object(panel,'_dashboard_worker',side_effect=worker):
             self.assertEqual(202,self.request('POST','/api/run',{'bank':'ing'})[0])
@@ -72,6 +75,9 @@ class PanelTests(unittest.TestCase):
 
     def test_non_boolean_mode_is_rejected(self):
         self.assertEqual(400,self.request('POST','/api/run',{'bank':'ing','dry_run':'false'})[0])
+
+    def test_ing_side_update_is_rejected(self):
+        self.assertEqual(400,self.request('POST','/api/run',{'bank':'ing','operation':'stage'})[0])
 
     def test_foreign_origin_or_host_is_rejected(self):
         self.assertEqual(403,self.request('GET','/api/banks',headers={'Host':'example.invalid'})[0])

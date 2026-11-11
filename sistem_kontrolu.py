@@ -45,7 +45,11 @@ def main() -> int:
         except Exception as exc:
             errors.append(f"Kutuphane yuklenemedi: {module_name} ({type(exc).__name__})")
 
-    for filename in ("banka_otomatik_guncelle.py", "entegre_excel_olustur.py", "kap_config.json", "kap_transport.py", "kap_connection.json", "panel.py", "requirements.txt", "banka_paneli/index.html", "banka_paneli/app.js"):
+    for filename in (
+        "banka_otomatik_guncelle.py", "yan_excel_otomatik_guncelle.py", "yan_excel_donem_ekle.py",
+        "entegre_excel_olustur.py", "kap_config.json", "kap_transport.py", "kap_connection.json",
+        "panel.py", "requirements.txt", "banka_paneli/index.html", "banka_paneli/app.js",
+    ):
         path = ROOT / filename
         if path.is_file():
             print(f"[OK] Ana dosya: {filename}")
@@ -65,6 +69,11 @@ def main() -> int:
             errors.append(f"{key}: eksik banka kaynak dosyasi ({', '.join(missing) or 'parser'})")
             continue
         print(f"[OK] Banka kaynaklari: {key}")
+
+        if key != "ing":
+            side_name = f"{prefix}_yan_excel_guncelle.py"
+            if not (bank_dir / side_name).is_file():
+                errors.append(f"{key}: eksik yan Excel adaptoru ({side_name})")
 
     for path in ROOT.rglob("*.py"):
         if any(part in {'.venv','venv','__pycache__','node_modules'} for part in path.relative_to(ROOT).parts):

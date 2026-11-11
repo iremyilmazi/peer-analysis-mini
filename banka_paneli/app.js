@@ -1,8 +1,8 @@
 'use strict';
 const $ = selector => document.querySelector(selector);
 let mode = 'dry', cursor = 0, lastState = 'IDLE', context = {ready: false};
-let polling = false, starting = false, contextSequence = 0;
-const progressMap = {'1-KAP':18,'2-EXCEL':43,'3-PDF':68,'3B-BIRLESTIR':82,'4-KONTROL':94,'Tamamlandi':100,'Kayit':98,'Dry-run':98};
+let polling = false, starting = false, contextSequence = 0, banks = [];
+const progressMap = {'1-KAP':18,'2-EXCEL':43,'3-PDF':68,'3B-BIRLESTIR':82,'4-KONTROL':94,'2-YAN-EXCEL':68,'3-KONTROL':94,'Tamamlandi':100,'Kayit':98,'Dry-run':98};
 
 async function api(url, options) {
   const response = await fetch(url, options);
@@ -17,46 +17,68 @@ function fmt(seconds) {
   seconds = Math.max(0, Math.floor(seconds || 0));
   return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 }
+function operationLabel() {
+  return $('#operation').selectedOptions[0]?.textContent || 'Güncelleme';
+}
+function selectedBank() {
+  return banks.find(bank => bank.key === $('#bank').value);
+}
+function configureOperationOptions() {
+  const supportsSideUpdates = Boolean(selectedBank()?.side_updates);
+  for (const option of $('#operation').options) {
+    option.disabled = option.value !== 'main' && !supportsSideUpdates;
+  }
+  if (!supportsSideUpdates && $('#operation').value !== 'main') $('#operation').value = 'main';
+}
 function syncControls() {
   const running = lastState === 'RUNNING';
   $('#bank').disabled = running || starting;
+  $('#operation').disabled = running || starting || !selectedBank();
   $('#refreshContext').disabled = running || starting;
   document.querySelectorAll('.mode button').forEach(b => b.disabled = running || starting);
   $('#runButton').disabled = starting || (!running && !context.ready);
 }
+function updateSafetyText() {
+  $('#safetyText').textContent = mode === 'dry'
+    ? `Seçili ${operationLabel()} değiştirilmez. Sonuç ayrı bir kontrol kopyasına yazılır.`
+    : `Seçili ${operationLabel()} önce yedeklenir; tüm kontroller geçerse atomik olarak güncellenir.`;
+}
 async function refreshContext() {
-  const sequence = ++contextSequence, bank = $('#bank').value;
+  configureOperationOptions();
+  const sequence = ++contextSequence, bank = $('#bank').value, operation = $('#operation').value;
   context = {ready:false};
   syncControls();
-  const data = await api('/api/context?bank=' + encodeURIComponent(bank));
-  if (sequence !== contextSequence || bank !== $('#bank').value) return;
+  const data = await api('/api/context?bank=' + encodeURIComponent(bank) + '&operation=' + encodeURIComponent(operation));
+  if (sequence !== contextSequence || bank !== $('#bank').value || operation !== $('#operation').value) return;
   context = data;
   $('#latestPeriod').textContent = context.latest_period || 'Dosya/dönem bulunamadı';
   $('#nextPeriod').textContent = context.next_period || '—';
+  updateSafetyText();
   syncControls();
-  if (lastState === 'IDLE') $('#heroDetail').textContent = context.ready ? 'Yalnız '+context.next_period+' dönemi aranacak.' : context.error;
+  if (lastState === 'IDLE') $('#heroDetail').textContent = context.ready ? `Yalnız ${context.next_period} dönemi aranacak.` : context.error;
 }
 document.querySelectorAll('.mode button').forEach(button => button.onclick = () => {
   if (lastState === 'RUNNING' || starting) return;
   mode = button.dataset.mode;
   document.querySelectorAll('.mode button').forEach(b => b.classList.toggle('active', b === button));
-  $('#safetyText').textContent = mode === 'dry' ? 'Ana Excel değiştirilmez. Sonuç ayrı bir kontrol kopyasına yazılır.' : 'Ana Excel önce yedeklenir; tüm kontroller geçerse atomik olarak güncellenir.';
+  updateSafetyText();
 });
 $('#bank').onchange = () => refreshContext().catch(showError);
+$('#operation').onchange = () => refreshContext().catch(showError);
 $('#refreshContext').onclick = () => refreshContext().catch(showError);
 function showError(error) { $('#heroDetail').textContent = error.message; }
 $('#runButton').onclick = async () => {
   if (starting) return;
   try {
     if (lastState === 'RUNNING') { await post('/api/stop'); return; }
-    if (mode === 'live' && !window.confirm('Çalışma Excel’iniz yedeklenip güncellenecek. Devam edilsin mi?')) return;
+    if (mode === 'live' && !window.confirm(`${operationLabel()} çalışma kopyanız yedeklenip güncellenecek. Devam edilsin mi?`)) return;
     starting = true;
     syncControls();
     await refreshContext();
     if (!context.ready) throw new Error(context.error || 'Excel hazır değil.');
     cursor = 0;
     $('#log').textContent = '';
-    render(await post('/api/run', {bank:$('#bank').value, dry_run:mode === 'dry'}));
+    render(await post('/api/run', {bank:$('#bank').value, operation:$('#operation').value, dry_run:mode === 'dry'}));
   } catch (error) { showError(error); }
   finally { starting = false; syncControls(); }
 };
@@ -83,7 +105,7 @@ function render(state) {
   $('#statusLabel').textContent = `● DURUM: ${running?'ÇALIŞIYOR':ok?'TAMAMLANDI':noNew?'YENİ DÖNEM YOK':error?'HATA':'HAZIR'}`;
   $('#statusLabel').style.color = error ? 'var(--red)' : running || noNew ? 'var(--amber)' : 'var(--green)';
   $('#heroTitle').textContent = running ? (state.bank_name || 'Banka')+' güncelleniyor' : ok ? 'İşlem Tamamlandı' : noNew ? 'Beklenen Dönem Bulunamadı' : error ? 'İşlem Durduruldu' : 'Güncellemeye Hazır';
-  $('#heroDetail').textContent = running ? state.step : ok ? 'Kontroller geçti. Çıktı dosyalarını aşağıdan açabilirsiniz.' : noNew ? 'Excel değişmedi. Daha sonraki bir döneme atlanmadı.' : error ? state.error || 'Konsol ayrıntılarını kontrol edin.' : context.ready ? 'Yalnız '+context.next_period+' dönemi aranacak.' : context.error || 'Excel kontrol ediliyor.';
+  $('#heroDetail').textContent = running ? state.step : ok ? 'Kontroller geçti. Çıktı dosyalarını aşağıdan açabilirsiniz.' : noNew ? 'Excel değişmedi. Daha sonraki bir döneme atlanmadı.' : error ? state.error || 'Konsol ayrıntılarını kontrol edin.' : context.ready ? `Yalnız ${context.next_period} dönemi aranacak.` : context.error || 'Excel kontrol ediliyor.';
   const pct = running ? progressMap[state.step] || state.progress || 5 : ok ? 100 : 0;
   $('#progressBar').style.width = pct+'%';
   $('#progressText').textContent = pct+'%';
@@ -121,7 +143,9 @@ async function poll() {
 async function init() {
   try {
     const data = await api('/api/banks');
-    $('#bank').replaceChildren(...data.banks.map(bank => new Option(bank.name, bank.key)));
+    banks = data.banks;
+    $('#bank').replaceChildren(...banks.map(bank => new Option(bank.name, bank.key)));
+    configureOperationOptions();
     await refreshContext();
     await poll();
     setInterval(poll, 750);

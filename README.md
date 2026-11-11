@@ -33,7 +33,7 @@ Her işlemde bir banka seçilir. Aynı Excel üzerinde bankalar sırayla çalı�
 2. Hedef bunun **tam bir çeyrek sonrası** olarak belirlenir.
 3. Hedef dönemin klasöründeki kaynak KAP Excel’i ve PDF doğrulanır. İkisi de kullanılabilir durumdaysa KAP’a bağlanmadan yerel kaynaklar kullanılır.
 4. Yerel kaynaklar eksik/geçersizse KAP’ta yalnız bu dönemin konsolide olmayan (solo) bildirimi aranır ve hedef dönem ekleri için indirme akışı çalışır.
-5. Finansal tablolar ve PDF dipnotları geçici kopyada işlenir.
+5. Ana Excel seçildiğinde finansal tablolar ve PDF dipnotları geçici kopyada işlenir.
 6. Yalnız yeni dönemin TL / YP / TOPLAM kolonları mevcut şablona aktarılır.
 7. Eski dönemler ve diğer banka hücreleri değer/biçim bakımından korunuyor mu kontrol edilir.
 8. Güvenli denemede ayrı sonuç üretilir. Gerçek güncellemede kontrollerden sonra yedek alınır ve dosya atomik olarak değiştirilir.
@@ -42,7 +42,9 @@ Her işlemde bir banka seçilir. Aynı Excel üzerinde bankalar sırayla çalı�
 
 **Geçmiş kaynak arşivi gerekmez ve ilk çalıştırmada 2020’den başlayan indirme yapılmaz.** Ancak Excel’in kendisi mevcut dönemleri ve doğru şablonu içermelidir. Geçerli dönem yoksa işlem durur.
 
-Kapsam dışı: diğer yan Excel dosyaları, tarihçe oluşturma, tüm bankaları paralel güncelleme, otomatik zamanlama, bulut sunucusu ve Excel şablonunu sıfırdan kurma. Alt indirici/parser modüllerini doğrudan çalıştırmayın; bazılarında tarihçe işlevleri bulunur. Normal giriş noktaları `panel.py` ve `banka_otomatik_guncelle.py` dosyalarıdır.
+Panelde ayrıca iki bağımsız güncelleme alanı vardır: `Kredi aşamaları Excel’i` ve `Mevduat faizi Excel’i`. Bu akışlar ana Excel’e veya PDF dipnotu yazımına dokunmaz. İlgili yan Excel’in seçili banka sayfasındaki son dönem okunur, KAP’tan yeni kaynak indirilir ve yalnız daha yeni dönem blokları sona eklenir. Mevcut sheet silinmez ya da yeniden oluşturulmaz. ING Bank için yan Excel ayrıştırıcısı tanımlı değildir.
+
+Kapsam dışı: tarihçe oluşturma, tüm bankaları paralel güncelleme, otomatik zamanlama, bulut sunucusu ve Excel şablonunu sıfırdan kurma. Alt indirici/parser modüllerini doğrudan çalıştırmayın; bazılarında tarihçe işlevleri bulunur. Normal giriş noktaları `panel.py`, `banka_otomatik_guncelle.py` ve `yan_excel_otomatik_guncelle.py` dosyalarıdır.
 
 ## Kurulum öncesi
 
@@ -51,7 +53,9 @@ Gerekenler:
 - Kurumunuzun izin verdiği Windows bilgisayar ve **Python 3.12** kurulumu. Kaynakta asgari sürüm kontrolü 3.11 olsa da doğrulanan kurulum 3.12’dir.
 - Yazma izniniz olan yerel proje klasörü. Ağ sürücüsü/OneDrive eşzamanlaması ve dosya kilitleri yerine yerel çalışma önerilir.
 - Kurumun onayladığı Python paket deposuna ve çalışma sırasında `https://www.kap.org.tr` adresine HTTPS erişimi.
-- Halihazırda kullanılan, bu projenin banka sayfaları ve dönem düzeniyle uyumlu `butunlesik_banka_verisi.xlsx` dosyasının **çalışma kopyası**.
+- Ana akış için halihazırda kullanılan, bu projenin banka sayfaları ve dönem düzeniyle uyumlu `butunlesik_banka_verisi.xlsx` dosyasının **çalışma kopyası**.
+- Kredi aşamaları güncellemesi için, banka sheet’leri ve dönem başlıkları bulunan `birinci_ikinci_asama_krediler.xlsx` çalışma kopyası.
+- Mevduat faizi güncellemesi için, banka sheet’leri ve dönem başlıkları bulunan `mevduat_faiz.xlsx` çalışma kopyası.
 - Güncelleme sırasında Excel dosyasının Excel uygulamasında kapalı olması.
 
 Microsoft Excel, Python işleminin çalışması için kurulu olmak zorunda değildir; sonuçları açıp kontrol etmek için uygun bir Excel görüntüleyici gerekir. Codex ve Node.js gerekmez. Git yalnız GitHub’a yükleme/güncelleme için gerekir; uygulamayı çalıştırmanın şartı değildir. Selenium `requirements.txt` ile kurulur; Edge bağlantısında ayrıca yerel Edge ve uyumlu `msedgedriver.exe` gerekir.
@@ -265,6 +269,12 @@ Panel olmadan aynı motor kullanılabilir. Ana motorun varsayılanı **gerçek k
 
 # Bu girişte gerçek kayıt açıkça seçilir
 .\.venv\Scripts\python.exe panel.py --bank ing --live
+
+# Yan Excel’de yalnız yeni dönemi güvenli denemede çalıştır
+.\.venv\Scripts\python.exe yan_excel_otomatik_guncelle.py --bank akbank --product stage --dry-run
+
+# Mevduat faizi yan Excel’ine gerçek kayıt yap
+.\.venv\Scripts\python.exe yan_excel_otomatik_guncelle.py --bank akbank --product deposit
 ```
 
 Excel’i proje dışında tutmak isterseniz CLI’de açık yol verin; web panelinin girdisi proje kökündeki sabit dosyadır:
@@ -289,6 +299,8 @@ Tam seçenekler için `python banka_otomatik_guncelle.py --help` kullanın.
 panel.py                              Yerel HTTP paneli / terminal giriş noktası
 banka_paneli/index.html + app.js       Arayüz kaynakları
 banka_otomatik_guncelle.py             13 banka, tek dönem, denetim ve kayıt motoru
+yan_excel_otomatik_guncelle.py         Yan Excel'lere bağımsız, artımlı kayıt motoru
+yan_excel_donem_ekle.py                Yan Excel dönem/tekrar denetim yardımcıları
 entegre_excel_olustur.py               KAP Excel tabloları okuyucusu
 kap_config.json                       Banka yapılandırması; özel anahtar içermez
 kap_connection.json                   auto / edge / http bağlantı ve yerel driver ayarları
@@ -306,6 +318,8 @@ docs/                                 Mimari, test kapsamı, GitHub kontrol notl
 <banka klasörü>/data/pdf_cache/         Ayrıştırma önbelleği
 outputs/otomatik_guncelleme_audit/      JSON işlem/kontrol raporları
 outputs/otomatik_guncelleme_yedek/      Gerçek kayıt öncesi yedekler
+outputs/yan_excel_guncelleme_audit/     Yan Excel JSON işlem/kontrol raporları
+outputs/yan_excel_guncelleme_yedek/     Yan Excel gerçek kayıt öncesi yedekleri
 ```
 
 Kaynak ve yedek dosyalarını sıradan cache sanarak silmeyin. `.gitignore` bunları GitHub’a dahil etmemek içindir; otomatik temizlik yapmaz. Kaynaklar, kullanıcı Excel’i ve kütüphaneler bu temiz dağıtımda bulunmaz. `teb_bankasi` ve bankalar arası bazı yardımcı kodlar ortak bağımlılıktır; yalnız tek bankayı kullanacaksanız bile rastgele klasör silmeyin.
@@ -317,7 +331,7 @@ Kaynak ve yedek dosyalarını sıradan cache sanarak silmeyin. `.gitignore` bunl
 | `python` bulunamadı / mağaza açılıyor | Python 3.12’nin gerçek yolunu veya `py -3.12` kullanın. Kurum onaylı kurulum isteyin. |
 | `No module named ...` | `.venv` Python’unu kullandığınızı doğrulayın; `-m pip install -r requirements.txt` komutunu aynı ortamda çalıştırın. |
 | Python dosyası bulunamadı | Proje kökünde olduğunuzu ve alt klasörlerin tam taşındığını kontrol edin. |
-| Excel/sayfa/dönem bulunamadı | Dosya adı, `.xlsx` uzantısı, seçili banka sayfası ve ilk satırdaki mevcut dönem başlıklarını kontrol edin. Boş Excel kullanmayın. |
+| Excel/sayfa/dönem bulunamadı | Seçilen alana göre doğru dosya adını, `.xlsx` uzantısını, seçili banka sayfasını ve ilk sütundaki mevcut dönem bloklarını kontrol edin. Boş Excel kullanmayın. |
 | İzin/dosya kullanım hatası | Excel’i kapatın, lock/eşzamanlama sorununu kontrol edin; yerel yazılabilir dizin kullanın. |
 | Panel açılmıyor | Terminal açık mı? Konsoldaki gerçek adresi kullanın; sabit port doluysa kaldırın. HTML dosyasını doğrudan açmayın. |
 | Panel bağlantısı koptu | Python süreci kapandıysa yeniden başlatın; eski port sekmesini değil yeni adresi kullanın. |
