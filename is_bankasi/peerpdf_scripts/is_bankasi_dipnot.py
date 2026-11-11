@@ -1824,6 +1824,7 @@ def _apply_2026q3_layout_corrections(
             ["Tahsil İmkânı Sınırlı Krediler İçin Ayrılanlar", "", "", "14.375"],
             ["Tahsili Şüpheli Krediler İçin Ayrılanlar", "", "", "22.658"],
             ["Zarar Niteliğindeki Krediler İçin Ayrılanlar", "", "", "36.533"],
+            ["Toplam", "", "", "73.566"],
         ],
         OTHER_OPERATING_INCOME_TITLE: [
             ["Diğer Faaliyet Gelirleri", "", "", "16.121"],
