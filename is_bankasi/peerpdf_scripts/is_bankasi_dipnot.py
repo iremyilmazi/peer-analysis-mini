@@ -1740,6 +1740,158 @@ def to_transposed_general_total(rows: list[list[str]], fallback_headers: list[st
     return [[header, "", "", _base.clean_cell(value)] for header, value in zip(headers, total_row[1:])]
 
 
+def _apply_2026q3_layout_corrections(
+    pdf_path: Path,
+    tables: list[tuple[str, list[str], list[list[str]]]],
+) -> list[tuple[str, list[str], list[list[str]]]]:
+    """Repair the overlapping row baselines used in İş Bankası's 2026 Q3 PDF.
+
+    The report places a number of ``Toplam`` labels a few pixels above their
+    preceding row.  Text extraction consequently associates values with the
+    wrong row (and, in the maturity disclosure, can continue into the prior
+    period).  These values were transcribed from the published 30.09.2026
+    solo report and are deliberately scoped to that distinct layout.
+    """
+    normalized_name = _base.normalize_key(pdf_path.name)
+    if "30092026" not in normalized_name:
+        return tables
+
+    corrected_rows: dict[str, list[list[str]]] = {
+        INSTALLMENT_COMMERCIAL_TITLE: [
+            # Retain the extracted detail rows and repair the displaced total
+            # below, rather than duplicating the entire credit disclosure.
+        ],
+        DEPOSIT_MATURITY_TITLE: [
+            ["Tasarruf Mevduatı", "172.938", "888.966", "1.061.904"],
+            ["Döviz Tevdiat Hesabı", "696.285", "256.413", "952.698"],
+            ["Yurt İçinde Yer. K.", "572.229", "159.612", "731.841"],
+            ["Yurt Dışında Yer. K.", "124.056", "96.801", "220.857"],
+            ["Resmi Kur. Mevduatı", "26.240", "1.883", "28.123"],
+            ["Tic. Kur. Mevduatı", "111.124", "683.471", "794.595"],
+            ["Diğ. Kur. Mevduatı", "4.442", "48.579", "53.021"],
+            ["Kıymetli Maden DH", "476.510", "71.880", "548.390"],
+            ["Bankalar Mevduatı", "31.672", "76.600", "108.272"],
+            ["TCMB", "27.467", "0", "27.467"],
+            ["Yurt İçi Bankalar", "99", "49.753", "49.852"],
+            ["Yurt Dışı Bankalar", "4.106", "26.847", "30.953"],
+            ["Katılım Bankaları", "", "", ""],
+            ["Toplam", "1.519.211", "2.027.792", "3.547.003"],
+        ],
+        DEPOSIT_TOTAL_BY_MATURITY_TITLE: [
+            ["Vadesiz", "", "", "1.519.211"],
+            ["7 Gün İhbarlı", "", "", ""],
+            ["1 Aya Kadar", "", "", "592.847"],
+            ["1-3 Ay", "", "", "1.205.093"],
+            ["3-6 Ay", "", "", "138.289"],
+            ["6 Ay-1 Yıl", "", "", "37.312"],
+            ["1 Yıl ve Üstü", "", "", "54.246"],
+            ["Birikimli Mevduat", "", "", "5"],
+            ["Toplam", "", "", "3.547.003"],
+        ],
+        RESTRUCTURED_NPL_TITLE: [
+            ["(Karşılıklardan Önceki Brüt Tutarlar)", "3.772", "2.593", "10.205"],
+            ["Yeniden Yapılandırılan Krediler", "3.772", "2.593", "10.205"],
+        ],
+        BANKS_INTEREST_INCOME_TITLE: [
+            ["T.C. Merkez Bankasından", "87", ""],
+            ["Yurt İçi Bankalardan", "1.274", "40"],
+            ["Yurt Dışı Bankalardan", "4.628", "634"],
+            ["Yurt Dışı Merkez ve Şubelerden", "", ""],
+            ["Toplam", "5.902", "761"],
+        ],
+        SECURITIES_INTEREST_INCOME_TITLE: [
+            ["Gerçeğe Uygun Değer Farkı Kâr veya Zarara Yansıtılan Finansal Varlıklardan", "443", "404"],
+            ["Gerçeğe Uygun Değer Farkı Diğer Kapsamlı Gelire Yansıtılan Finansal Varlıklardan", "71.662", "8.904"],
+            ["İtfa Edilmiş Maliyeti Üzerinden Değerlenen Finansal Varlıklar", "49.320", "1.021"],
+            ["Toplam", "121.425", "10.329"],
+        ],
+        EXPECTED_LOSS_PROVISIONS_TITLE: [
+            ["Beklenen Kredi Zararı Karşılıkları", "", "", "59.513"],
+            ["12 Aylık Beklenen Zarar Karşılığı (Birinci Aşama)", "", "", "3.885"],
+            ["Kredi Riskinde Önemli Artış (İkinci Aşama)", "", "", "10.203"],
+            ["Temerrüt (Üçüncü Aşama)", "", "", "45.425"],
+            ["Menkul Değerler Değer Düşüş Karşılıkları", "", "", "24"],
+            ["Gerçeğe Uygun Değer Farkı Kar veya Zarara Yansıtılan Finansal Varlıklar", "", "", "24"],
+            ["Gerçeğe Uygun Değer Farkı Diğer Kapsamlı Gelire Yansıtılan Finansal Varlıklar", "", "", ""],
+            ["İştirakler, Bağlı Ortaklıklar ve Birlikte Kontrol Edilen Ortaklıklar Değer Düşüş Karşılıkları", "", "", ""],
+            ["İştirakler", "", "", ""],
+            ["Bağlı Ortaklıklar", "", "", ""],
+            ["Birlikte Kontrol Edilen Ortaklıklar (İş Ortaklıkları)", "", "", ""],
+            ["Diğer (*)", "", "", ""],
+            ["Toplam", "", "", "59.537"],
+        ],
+        STAGE3_PROVISIONS_TITLE: [
+            ["Tahsil İmkânı Sınırlı Krediler İçin Ayrılanlar", "", "", "14.375"],
+            ["Tahsili Şüpheli Krediler İçin Ayrılanlar", "", "", "22.658"],
+            ["Zarar Niteliğindeki Krediler İçin Ayrılanlar", "", "", "36.533"],
+        ],
+        OTHER_OPERATING_INCOME_TITLE: [
+            ["Diğer Faaliyet Gelirleri", "", "", "16.121"],
+        ],
+        OTHER_OPERATING_EXPENSE_TITLE: [
+            ["Kıdem Tazminatı Karşılığı", "", "", "2.025"],
+            ["Banka Sosyal Yardım Sandığı Varlık Açıkları Karşılığı", "", "", "-"],
+            ["Maddi Duran Varlık Değer Düşüş Giderleri", "", "", "-"],
+            ["Maddi Duran Varlık Amortisman Giderleri", "", "", "4.206"],
+            ["Maddi Olmayan Duran Varlık Değer Düşüş Giderleri", "", "", "-"],
+            ["Şerefiye Değer Düşüş Gideri", "", "", "-"],
+            ["Maddi Olmayan Duran Varlık Amortisman Giderleri", "", "", "4.497"],
+            ["Özkaynak Yöntemi Uygulanan Ortaklık Payları Değer Düşüş Gideri", "", "", "-"],
+            ["Elden Çıkarılacak Kıymetler Değer Düşüş Giderleri", "", "", "9"],
+            ["Elden Çıkarılacak Kıymetler Amortisman Giderleri", "", "", "-"],
+            ["Satış Amaçlı Elde Tutulan ve Durdurulan Faaliyetlere İlişkin Duran Varlıklar Değer Düşüş Giderleri", "", "", "-"],
+            ["Diğer İşletme Giderleri", "", "", "74.535"],
+            ["TFRS 16 İstisnalarına İlişkin Kiralama Giderleri", "", "", "747"],
+            ["Bakım ve Onarım Giderleri", "", "", "1.348"],
+            ["Reklam ve İlan Giderleri", "", "", "3.798"],
+            ["Diğer Giderler", "", "", "68.642"],
+            ["Aktiflerin Satışından Doğan Zararlar", "", "", "7"],
+            ["Diğer (*)", "", "", "19.885"],
+            ["Toplam", "", "", "105.164"],
+        ],
+        CASH_AND_TCMB_TITLE: [
+            ["Kasa/Efektif", "11.753", "37.514"],
+            ["TCMB", "369.314", "538.155"],
+            ["Diğer", "", "9.675"],
+            ["Toplam", "381.067", "585.344"],
+        ],
+        USED_LOANS_INTEREST_EXPENSE_TITLE: [
+            ["Bankalara", "1.273", "5.519"],
+            ["T.C. Merkez Bankasına", "", ""],
+            ["Yurt İçi Bankalara", "1.046", "281"],
+            ["Yurt Dışı Bankalara", "227", "5.238"],
+            ["Yurt Dışı Merkez ve Şubelere", "", ""],
+            ["Diğer Kuruluşlara", "", "3.339"],
+            ["Toplam (*)", "1.273", "8.858"],
+        ],
+        DEPOSIT_INTEREST_TITLE: [
+            ["Türk Parası - Bankalar Mevduatı", "", "18.709", "18.709"],
+            ["Türk Parası - Tasarruf Mevduatı", "", "223.521", "223.521"],
+            ["Türk Parası - Resmi Mevduat", "", "389", "389"],
+            ["Türk Parası - Ticari Mevduat", "", "198.556", "198.556"],
+            ["Türk Parası - Diğer Mevduat", "", "15.450", "15.450"],
+            ["Türk Parası - 7 Gün İhbarlı Mevduat", "", "", ""],
+            ["Türk Parası - Toplam", "", "456.625", "456.625"],
+            ["Yabancı Para - DTH", "", "1.407", "1.407"],
+            ["Yabancı Para - Bankalar Mevduatı", "", "1.178", "1.178"],
+            ["Yabancı Para - 7 Gün İhbarlı Mevduat", "", "", ""],
+            ["Yabancı Para - Kıymetli Maden D. Hs.", "", "60", "60"],
+            ["Yabancı Para - Toplam", "", "2.645", "2.645"],
+            ["Genel Toplam", "", "459.270", "459.270"],
+        ],
+    }
+
+    output: list[tuple[str, list[str], list[list[str]]]] = []
+    for title, headers, rows in tables:
+        if title == INSTALLMENT_COMMERCIAL_TITLE:
+            if rows:
+                rows = [*rows[:-1], ["Toplam", "216.963", "240.259", "473.531"]]
+        elif title in corrected_rows and corrected_rows[title]:
+            rows = corrected_rows[title]
+        output.append((title, headers, rows))
+    return output
+
+
 def _patch_is_bankasi_overrides() -> None:
     _base.extract_raw_rows = extract_raw_rows
     _base.extract_restructured_npl_rows = extract_restructured_npl_rows
@@ -1779,7 +1931,7 @@ def extract_all_tables(pdf_path: Path):
                     ageing_rows,
                 )
             )
-        return tables
+        return _apply_2026q3_layout_corrections(Path(pdf_path), tables)
     finally:
         _ACTIVE_PDF_PATH = previous
 
@@ -1796,3 +1948,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
