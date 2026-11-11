@@ -18,7 +18,7 @@ DEFAULT_PDF_DIR = "is_bankasi/data/history"
 DEFAULT_CACHE_DIR = "is_bankasi/data/pdf_cache"
 DEFAULT_WORKERS = 1
 PEERPDF_SCRIPT_PATH = Path(__file__).resolve().parent / "peerpdf_scripts" / "is_bankasi_dipnot.py"
-CACHE_VERSION = 45
+CACHE_VERSION = 46
 STAGE_PROVISION_TITLE = (
     "Standart nitelikli ve yakin izlemedeki krediler ile yeniden yapilandirilan "
     "yakin izlemedeki kredilere iliskin bilgiler"
