@@ -1793,7 +1793,7 @@ def _apply_2026q3_layout_corrections(
             ["Yeniden Yapılandırılan Krediler", "3.772", "2.593", "10.205"],
         ],
         BANKS_INTEREST_INCOME_TITLE: [
-            ["T.C. Merkez Bankasından", "87", ""],
+            ["T.C. Merkez Bankasından", "", "87"],
             ["Yurt İçi Bankalardan", "1.274", "40"],
             ["Yurt Dışı Bankalardan", "4.628", "634"],
             ["Yurt Dışı Merkez ve Şubelerden", "", ""],
